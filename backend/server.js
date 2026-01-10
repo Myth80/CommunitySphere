@@ -5,6 +5,13 @@ const cors = require("cors");
 dotenv.config();
 
 const app = express();
+//db
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1);
+  });
 
 /*  CORS  */
 app.use(cors({
