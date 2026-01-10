@@ -1,13 +1,13 @@
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const mongoose = require("mongoose"); // ✅ MISSING LINE (THIS IS THE FIX)
+const mongoose = require("mongoose"); 
 
 dotenv.config();
 
 const app = express();
 
-/* ✅ CONNECT TO MONGODB */
+/*  DB */
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB connected"))
   .catch((err) => {
