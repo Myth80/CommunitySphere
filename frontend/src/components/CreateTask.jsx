@@ -18,7 +18,7 @@ export default function CreateTask({ onTaskCreated }) {
 
     try {
       setLoading(true);
-      await api.post('/api/tasks', { title, category });
+      await api.post('/tasks', { title, category });
       setTitle('');
       setCategory('');
       onTaskCreated(); // refresh dashboard
