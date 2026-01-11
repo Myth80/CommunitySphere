@@ -7,6 +7,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -18,14 +19,20 @@ export default function AdminDashboard() {
   const fetchAdminData = async () => {
     try {
       setLoading(true);
+
       const [usersRes, tasksRes] = await Promise.all([
         api.get('/admin/users'),
         api.get('/admin/tasks')
       ]);
-      setUsers(usersRes.data);
-      setTasks(tasksRes.data);
+
+      // ✅ Defensive state updates
+      setUsers(Array.isArray(usersRes.data) ? usersRes.data : []);
+      setTasks(Array.isArray(tasksRes.data) ? tasksRes.data : []);
     } catch (err) {
       console.error('Admin access denied or failed', err);
+      // ✅ Never allow undefined state
+      setUsers([]);
+      setTasks([]);
     } finally {
       setLoading(false);
     }
@@ -37,17 +44,21 @@ export default function AdminDashboard() {
 
   const banUser = async (userId) => {
     if (!window.confirm('Are you sure you want to ban this user?')) return;
+
     try {
       await api.put(`/admin/ban/${userId}`);
       fetchAdminData();
     } catch (err) {
-      alert("Action failed");
+      alert('Action failed');
     }
   };
 
   if (loading) {
     return (
-      <div className="dashboard-layout" style={{ textAlign: 'center', padding: '100px' }}>
+      <div
+        className="dashboard-layout"
+        style={{ textAlign: 'center', padding: '100px' }}
+      >
         <div className="loading-state">Syncing secure data...</div>
       </div>
     );
@@ -63,31 +74,41 @@ export default function AdminDashboard() {
             Global overview of users, platform trust, and system tasks.
           </p>
         </div>
-        <button 
-          style={{ backgroundColor: '#fff1f2', color: '#e11d48', border: '1px solid #ffe4e6' }} 
+        <button
+          style={{
+            backgroundColor: '#fff1f2',
+            color: '#e11d48',
+            border: '1px solid #ffe4e6'
+          }}
           onClick={handleLogout}
         >
           Logout
         </button>
       </header>
 
-      {/* STATS OVERVIEW */}
+      {/* STATS */}
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Total Users</span>
-          <span className="stat-value">{users.length}</span>
+          <span className="stat-value">{users?.length || 0}</span>
         </div>
+
         <div className="stat-card">
           <span className="stat-label">Active Tasks</span>
-          <span className="stat-value">{tasks.filter(t => t.status !== 'COMPLETED').length}</span>
+          <span className="stat-value">
+            {tasks?.filter(t => t.status !== 'COMPLETED').length || 0}
+          </span>
         </div>
+
         <div className="stat-card">
           <span className="stat-label">System Health</span>
-          <span className="stat-value" style={{ color: '#10b981' }}>Online</span>
+          <span className="stat-value" style={{ color: '#10b981' }}>
+            Online
+          </span>
         </div>
       </div>
 
-      {/* USERS SECTION */}
+      {/* USERS */}
       <section className="admin-section">
         <h3>User Management</h3>
         <div className="table-container">
@@ -101,8 +122,9 @@ export default function AdminDashboard() {
                 <th>Actions</th>
               </tr>
             </thead>
+
             <tbody>
-              {users.map((user) => (
+              {users.map(user => (
                 <tr key={user._id}>
                   <td>
                     <div className="user-cell">
@@ -110,34 +132,73 @@ export default function AdminDashboard() {
                       <span className="user-email">{user.email}</span>
                     </div>
                   </td>
+
                   <td>
-                    <span style={{ 
-                      fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase',
-                      color: user.role === 'admin' ? '#6366f1' : '#64748b'
-                    }}>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 'bold',
+                        textTransform: 'uppercase',
+                        color:
+                          user.role === 'admin'
+                            ? '#6366f1'
+                            : '#64748b'
+                      }}
+                    >
                       {user.role}
                     </span>
                   </td>
+
                   <td>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <div style={{ width: '60px', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                        <div style={{ 
-                          width: `${user.trustScore}%`, 
-                          height: '100%', 
-                          background: user.trustScore > 70 ? '#10b981' : '#f59e0b' 
-                        }} />
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: '60px',
+                          height: '6px',
+                          background: '#f1f5f9',
+                          borderRadius: '3px',
+                          overflow: 'hidden'
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: `${user.trustScore || 0}%`,
+                            height: '100%',
+                            background:
+                              user.trustScore > 70
+                                ? '#10b981'
+                                : '#f59e0b'
+                          }}
+                        />
                       </div>
-                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{user.trustScore}</span>
+                      <span style={{ fontSize: '12px', fontWeight: '600' }}>
+                        {user.trustScore || 0}
+                      </span>
                     </div>
                   </td>
+
                   <td>
-                    <span className={`status-pill ${user.isBanned ? 'banned' : 'active'}`}>
+                    <span
+                      className={`status-pill ${
+                        user.isBanned ? 'banned' : 'active'
+                      }`}
+                    >
                       {user.isBanned ? 'Banned' : 'Active'}
                     </span>
                   </td>
+
                   <td>
                     {!user.isBanned && user.role !== 'admin' && (
-                      <button className="btn-danger-soft" onClick={() => banUser(user._id)}>
+                      <button
+                        className="btn-danger-soft"
+                        onClick={() => banUser(user._id)}
+                      >
                         Ban User
                       </button>
                     )}
@@ -149,7 +210,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      {/* TASKS SECTION */}
+      {/* TASKS */}
       <section className="admin-section" style={{ marginTop: '40px' }}>
         <h3>System Tasks</h3>
         <div className="table-container">
@@ -162,21 +223,45 @@ export default function AdminDashboard() {
                 <th>Participants</th>
               </tr>
             </thead>
+
             <tbody>
-              {tasks.map((task) => (
+              {tasks.map(task => (
                 <tr key={task._id}>
-                  <td style={{ fontWeight: '600', color: '#1e293b' }}>{task.title}</td>
+                  <td style={{ fontWeight: '600', color: '#1e293b' }}>
+                    {task.title}
+                  </td>
+
                   <td>
-                    <span className={`status ${task.status}`} style={{ fontSize: '10px' }}>
+                    <span
+                      className={`status ${task.status}`}
+                      style={{ fontSize: '10px' }}
+                    >
                       {task.status}
                     </span>
                   </td>
-                  <td><span className="category-tag">{task.category || 'N/A'}</span></td>
+
+                  <td>
+                    <span className="category-tag">
+                      {task.category || 'N/A'}
+                    </span>
+                  </td>
+
                   <td>
                     <div style={{ fontSize: '12px' }}>
-                      <div style={{ color: '#64748b' }}>From: <span style={{ color: '#1e293b' }}>{task.createdBy?.name}</span></div>
+                      <div style={{ color: '#64748b' }}>
+                        From:{' '}
+                        <span style={{ color: '#1e293b' }}>
+                          {task.createdBy?.name}
+                        </span>
+                      </div>
+
                       {task.acceptedBy && (
-                        <div style={{ color: '#64748b' }}>To: <span style={{ color: '#1e293b' }}>{task.acceptedBy.name}</span></div>
+                        <div style={{ color: '#64748b' }}>
+                          To:{' '}
+                          <span style={{ color: '#1e293b' }}>
+                            {task.acceptedBy.name}
+                          </span>
+                        </div>
                       )}
                     </div>
                   </td>
