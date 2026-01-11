@@ -28,7 +28,7 @@ export default function Dashboard() {
       setLoading(true);
       const query = new URLSearchParams({
         page: pageNumber,
-        limit: 6, // Changed to 6 for better grid alignment (2x3 or 3x2)
+        limit: 6,
         ...(statusFilter && { status: statusFilter }),
         ...(categoryFilter && { category: categoryFilter })
       }).toString();
@@ -58,15 +58,30 @@ export default function Dashboard() {
     fetchTasks(page);
   };
 
+  // Helper for status badge colors
+  const getStatusStyle = (status) => {
+    switch (status) {
+      case 'OPEN': return { backgroundColor: '#dcfce7', color: '#15803d' };
+      case 'ACCEPTED': return { backgroundColor: '#dbeafe', color: '#1e40af' };
+      case 'COMPLETED': return { backgroundColor: '#f1f5f9', color: '#475569' };
+      default: return {};
+    }
+  };
+
   return (
     <div className='dashboard-layout'>
       {/* HEADER SECTION */}
       <header className="dashboard-header">
         <div>
-          <h2>Task Dashboard</h2>
-          <p className="subtitle">Manage your ongoing tasks and assignments</p>
+          <h2>Resource Dashboard</h2>
+          <p className="subtitle">Discover and manage community resources</p>
         </div>
-        <button className="danger" onClick={handleLogout}>Logout</button>
+        <button 
+          style={{ backgroundColor: '#fff1f2', color: '#e11d48', border: '1px solid #ffe4e6' }} 
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
       </header>
 
       {/* ACTION AREA */}
@@ -88,7 +103,7 @@ export default function Dashboard() {
             <label>Search Category</label>
             <input
               type="text"
-              placeholder="e.g. Design, Backend"
+              placeholder="e.g. Tools, Skill..."
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
             />
@@ -98,38 +113,48 @@ export default function Dashboard() {
 
       {/* TASK GRID */}
       {loading ? (
-        <div className="loading-state">Loading your tasks...</div>
+        <div className="loading-state" style={{ textAlign: 'center', padding: '100px', color: '#64748b' }}>
+          <p>Loading community resources...</p>
+        </div>
       ) : tasks.length === 0 ? (
-        <div className="empty-state">
-          <h3>No tasks found</h3>
-          <p>Try adjusting your filters or create a new task above.</p>
+        <div className="empty-state" style={{ textAlign: 'center', padding: '100px', background: 'white', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+          <h3>No resources found</h3>
+          <p className="subtitle">Try adjusting your filters or be the first to share something!</p>
         </div>
       ) : (
         <div className="task-grid">
           {tasks.map((task) => (
             <div key={task._id} className="task-card">
               <div className="task-card-header">
-                <span className={`status ${task.status}`}>{task.status}</span>
+                <span className="status" style={getStatusStyle(task.status)}>
+                  {task.status}
+                </span>
                 <span className="category-tag">{task.category || 'General'}</span>
               </div>
               
-              <h3>{task.title}</h3>
-              <p className="created-by">Created by: <span>{task.createdBy?.name}</span></p>
+              <h3 style={{ marginBottom: '8px', fontSize: '1.25rem' }}>{task.title}</h3>
+              <p className="created-by">Shared by: <span>{task.createdBy?.name || 'Community Member'}</span></p>
 
-              <div className="task-card-footer">
+              <div className="task-card-footer" style={{ marginTop: '20px' }}>
                 {task.status === 'OPEN' && task.createdBy?._id !== userId && (
-                  <button className="primary-button" onClick={() => acceptTask(task._id)}>
-                    Accept Task
+                  <button 
+                    className="primary-button" 
+                    style={{ width: '100%' }}
+                    onClick={() => acceptTask(task._id)}
+                  >
+                    Request Resource
                   </button>
                 )}
 
-                {task.status === 'ACCEPTED' &&
-                task.createdBy?._id === userId && (
-                <button className="success-button" onClick={() => completeTask(task._id)}>
-                 Mark Completed
-                 </button>
-)}
-
+                {task.status === 'ACCEPTED' && task.createdBy?._id === userId && (
+                  <button 
+                    className="success-button" 
+                    style={{ width: '100%' }}
+                    onClick={() => completeTask(task._id)}
+                  >
+                    Mark as Returned/Finished
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -138,14 +163,22 @@ export default function Dashboard() {
 
       {/* PAGINATION */}
       <div className="pagination">
-        <button disabled={page <= 1} onClick={() => fetchTasks(page - 1)}>
-          Previous
+        <button 
+          disabled={page <= 1} 
+          onClick={() => fetchTasks(page - 1)}
+          style={{ visibility: page <= 1 ? 'hidden' : 'visible' }}
+        >
+          ← Previous
         </button>
         <span className="page-info">
           Page <strong>{page}</strong> of {totalPages}
         </span>
-        <button disabled={page >= totalPages} onClick={() => fetchTasks(page + 1)}>
-          Next
+        <button 
+          disabled={page >= totalPages} 
+          onClick={() => fetchTasks(page + 1)}
+          style={{ visibility: page >= totalPages ? 'hidden' : 'visible' }}
+        >
+          Next →
         </button>
       </div>
     </div>
