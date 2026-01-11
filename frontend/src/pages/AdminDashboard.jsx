@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import api from '../api/axios';
-import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
@@ -12,9 +11,9 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-  logout();
-  navigate('/login');
-};
+    logout();
+    navigate('/login');
+  };
 
   const fetchAdminData = async () => {
     try {
@@ -46,23 +45,31 @@ export default function AdminDashboard() {
     }
   };
 
-  if (loading) return <div className="loading-state">Syncing secure data...</div>;
+  if (loading) {
+    return (
+      <div className="dashboard-layout" style={{ textAlign: 'center', padding: '100px' }}>
+        <div className="loading-state">Syncing secure data...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-layout">
+      {/* HEADER */}
       <header className="dashboard-header">
-  <div>
-    <h2>Admin Control Panel</h2>
-    <p className="subtitle">
-      Global overview of users, platform trust, and system tasks.
-    </p>
-  </div>
-
-  <button className="danger" onClick={handleLogout}>
-    Logout
-  </button>
-</header>
-
+        <div>
+          <h2>Admin Control Panel</h2>
+          <p className="subtitle">
+            Global overview of users, platform trust, and system tasks.
+          </p>
+        </div>
+        <button 
+          style={{ backgroundColor: '#fff1f2', color: '#e11d48', border: '1px solid #ffe4e6' }} 
+          onClick={handleLogout}
+        >
+          Logout
+        </button>
+      </header>
 
       {/* STATS OVERVIEW */}
       <div className="stats-grid">
@@ -76,7 +83,7 @@ export default function AdminDashboard() {
         </div>
         <div className="stat-card">
           <span className="stat-label">System Health</span>
-          <span className="stat-value" style={{color: '#10b981'}}>Online</span>
+          <span className="stat-value" style={{ color: '#10b981' }}>Online</span>
         </div>
       </div>
 
@@ -103,10 +110,24 @@ export default function AdminDashboard() {
                       <span className="user-email">{user.email}</span>
                     </div>
                   </td>
-                  <td><span className="role-badge">{user.role}</span></td>
                   <td>
-                    <div className="trust-score-bar">
-                        <span className="score-text">{user.trustScore}</span>
+                    <span style={{ 
+                      fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase',
+                      color: user.role === 'admin' ? '#6366f1' : '#64748b'
+                    }}>
+                      {user.role}
+                    </span>
+                  </td>
+                  <td>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ width: '60px', height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ 
+                          width: `${user.trustScore}%`, 
+                          height: '100%', 
+                          background: user.trustScore > 70 ? '#10b981' : '#f59e0b' 
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: '600' }}>{user.trustScore}</span>
                     </div>
                   </td>
                   <td>
@@ -129,7 +150,7 @@ export default function AdminDashboard() {
       </section>
 
       {/* TASKS SECTION */}
-      <section className="admin-section">
+      <section className="admin-section" style={{ marginTop: '40px' }}>
         <h3>System Tasks</h3>
         <div className="table-container">
           <table className="admin-table">
@@ -138,18 +159,27 @@ export default function AdminDashboard() {
                 <th>Title</th>
                 <th>Status</th>
                 <th>Category</th>
-                <th>Created By</th>
-                <th>Accepted By</th>
+                <th>Participants</th>
               </tr>
             </thead>
             <tbody>
               {tasks.map((task) => (
                 <tr key={task._id}>
-                  <td className="font-semibold">{task.title}</td>
-                  <td><span className={`status ${task.status}`}>{task.status}</span></td>
+                  <td style={{ fontWeight: '600', color: '#1e293b' }}>{task.title}</td>
+                  <td>
+                    <span className={`status ${task.status}`} style={{ fontSize: '10px' }}>
+                      {task.status}
+                    </span>
+                  </td>
                   <td><span className="category-tag">{task.category || 'N/A'}</span></td>
-                  <td>{task.createdBy?.name}</td>
-                  <td>{task.acceptedBy ? task.acceptedBy.name : <span className="text-muted">—</span>}</td>
+                  <td>
+                    <div style={{ fontSize: '12px' }}>
+                      <div style={{ color: '#64748b' }}>From: <span style={{ color: '#1e293b' }}>{task.createdBy?.name}</span></div>
+                      {task.acceptedBy && (
+                        <div style={{ color: '#64748b' }}>To: <span style={{ color: '#1e293b' }}>{task.acceptedBy.name}</span></div>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
