@@ -30,28 +30,52 @@ export default function CreateTask({ onTaskCreated }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '2rem' }}>
-      <h3>Create Task</h3>
+    <div className="task-card" style={{ marginBottom: '0', border: '1px solid #e2e8f0' }}>
+      <h3 style={{ fontSize: '16px', marginBottom: '16px', color: '#0f172a' }}>Share a New Resource</h3>
 
-      {error && <p style={{ color: 'red' }}>{error}</p>}
+      {error && (
+        <p style={{ 
+          color: '#dc2626', 
+          fontSize: '13px', 
+          backgroundColor: '#fee2e2', 
+          padding: '8px', 
+          borderRadius: '6px', 
+          marginBottom: '12px' 
+        }}>
+          {error}
+        </p>
+      )}
 
-      <input
-        type="text"
-        placeholder="Task title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div className="filter-group">
+          <input
+            type="text"
+            placeholder="What do you want to share? (e.g. Power Drill)"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{ marginBottom: '0' }}
+          />
+        </div>
 
-      <input
-        type="text"
-        placeholder="Category (optional)"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
-      />
+        <div className="filter-group">
+          <input
+            type="text"
+            placeholder="Category (e.g. Tools, Kitchen, Gardening)"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={{ marginBottom: '0' }}
+          />
+        </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? 'Creating...' : 'Create Task'}
-      </button>
-    </form>
+        <button 
+          type="submit" 
+          disabled={loading} 
+          className="success-button"
+          style={{ width: '100%', marginTop: '4px' }}
+        >
+          {loading ? 'Creating...' : 'Post Resource'}
+        </button>
+      </form>
+    </div>
   );
 }
