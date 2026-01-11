@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -9,15 +9,32 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-         <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
+        {/* Auth Routes*/}
+        <Route 
+          path="/register" 
+          element={
+            <div className="auth-wrapper">
+              <Register />
+            </div>
+          } 
+        />
+        <Route 
+          path="/login" 
+          element={
+            <div className="auth-wrapper">
+              <Login />
+            </div>
+          } 
+        />
 
+        {/* App Routes */}
         <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <div className="dashboard-layout">
+                <Dashboard />
+              </div>
             </ProtectedRoute>
           }
         />
@@ -26,7 +43,9 @@ export default function App() {
           path="/admin"
           element={
             <ProtectedRoute>
-              <AdminDashboard />
+              <div className="dashboard-layout">
+                <AdminDashboard />
+              </div>
             </ProtectedRoute>
           }
         />
