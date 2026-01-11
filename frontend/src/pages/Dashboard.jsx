@@ -34,7 +34,7 @@ export default function Dashboard() {
         ...(categoryFilter && { category: categoryFilter })
       }).toString();
 
-      const res = await api.get(`/tasks?${query}`);
+      const res = await api.get(`/api/tasks?${query}`);
 
       // ✅ Defensive updates (CRITICAL)
       setTasks(Array.isArray(res.data?.tasks) ? res.data.tasks : []);
@@ -55,7 +55,7 @@ export default function Dashboard() {
   }, [statusFilter, categoryFilter]);
 
   const acceptTask = async (taskId) => {
-    await api.put(`/tasks/${taskId}/accept`);
+    await api.put(`/api/tasks/${taskId}/accept`);
     fetchTasks(page);
   };
 
