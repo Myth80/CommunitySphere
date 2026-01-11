@@ -10,7 +10,8 @@ const app = express();
 // ✅ CORS (THIS WAS MISSING)
 app.use(
   cors({
-    origin: "http://localhost:5173","https://communitysphere-frontend.onrender.com"
+    origin: ["http://localhost:5173",
+             "https://communitysphere-frontend.onrender.com"],
     credentials: true
   })
 );
